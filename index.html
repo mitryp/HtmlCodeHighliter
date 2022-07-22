@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .code-keyword, .kwd {
+            color: #f58 !important;
+            font-weight: 800;
+        }
+
+        .code-function {
+            color: lightgreen;
+        }
+
+        .code-class, .typ {
+            color: yellow !important;
+        }
+
+        .code-number-literal, .lit {
+            color: skyblue !important;
+        }
+
+        .code-literal, .str {
+            color: lightblue !important;
+        }
+
+        .code-literal span {
+            font-style: inherit !important;
+            background: inherit !important;
+            color: inherit !important;
+        }
+
+        .code-comment, .com{
+            color: #ccc !important;
+        }
+
+        .code-comment span {
+            font-style: inherit !important;
+            color: inherit !important;
+        }
+
+        .pln, .pun {
+            color: white !important;
+        }
+
+        body {
+            background: #444;
+        }
+
+        code {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<pre><code class="code">import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:http/http.dart' as http;
+
+/// URI to fetch. '###' needs to be replaced with the session
+/// id code.
+final uri =
+    'http://example.com?sessionId=###';
+
+/*
+ * curl "http://example.com?sessionId=00000000"
+ * -H "Content-Type: application/json; charset=utf-8"
+ * -H "X-Requested-With: XMLHttpRequest"
+ * -H "Accept: application/json, text/javascript; q=0.01"
+ * -H "User-Agent: Chrome/103.0.0.0"
+ */
+
+Future&lt;http.Response> fetch(int code) {
+  return http.get(
+      Uri.parse(uri.replaceFirst(RegExp('###'), code.toString())),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'User-Agent': 'Chrome/103.0.0.0'
+      });
+}
+
+class StatusRecord {
+  const StatusRecord(this.info, this.date);
+
+  StatusRecord.fromJson(dynamic decoded)
+      : info = decoded['StatusName'],
+        date = DateTime.fromMillisecondsSinceEpoch(decoded['StatusDateUF']);
+
+  final String info;
+  final DateTime date;
+
+  @override
+  String toString() {
+    return 'StatusRecord{info: $info, date: ${date.day}.${date.month}.${date.year}';
+  }
+}
+
+List&lt;StatusRecord> parseResponseBody(Uint8List bodyBytes) {
+  var decoded = jsonDecode(utf8.decode(bodyBytes));
+  final List&lt;dynamic>? statusInfo = decoded['StatusInfo'];
+
+  if (statusInfo == null) return [];
+
+  return statusInfo.map&lt;StatusRecord>(StatusRecord.fromJson).toList(growable: false);
+}
+
+List&lt;String> stringifyRecords(List&lt;StatusRecord> records) {
+  return records.map((r) => '${r.date} - ${r.info}').toList(growable: false);
+}
+
+Future&lt;void> processCode(int code) async {
+  var response = (await fetch(code));
+  if (response.statusCode != 200) {
+    print('An error occurred');
+    return;
+  }
+
+  var formattedRecords =
+      stringifyRecords(parseResponseBody(response.bodyBytes));
+
+  if (formattedRecords.isNotEmpty) {
+    print('Fetched records:');
+    print(formattedRecords.join('\n'));
+  } else {
+    print('No records fetched');
+  }
+}
+
+void main(List&lt;String> args) async {
+  if (args.isEmpty) {
+    print('The first argument must be your session id code');
+    return;
+  }
+
+  final code = int.tryParse(args[0]);
+
+  if (code != null) {
+    await processCode(code);
+  } else {
+    print('The given argument cannot be parsed to int');
+  }
+}
+</code></pre>
+
+<!-- Connect the highlighter -->
+<script src="highlighter.js"></script>
+<script>
+    // Highlight the code in the element using the specified grammar
+    highlight(document.querySelector('.code'), DartGrammar);
+</script>
+
+</body>
+</html>
