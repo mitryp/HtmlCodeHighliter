@@ -169,7 +169,7 @@ class DartGrammar extends Grammar {
     }
 
     static classes() {
-        return /\b((int)|(bool)|(double)|(num)|([A-Z][A-Za-z]*(<[\w?]+>)?(\(.*\))?))\b/g;
+        return /\b((int)|(bool)|(double)|(num)|([A-Z][A-Za-z\d]*(<[\w?]+>)?(\(.*\))?))\b/g;
     }
 
     static identifiers() {
