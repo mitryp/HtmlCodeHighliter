@@ -205,16 +205,23 @@ function highlight(codeHolderNode, grammar) {
 }
 
 /**
- * Encases the
- * @param str
- * @param className
- * @returns {string}
+ * Encases the given string in a span with the given class name.
+ * @param str a text to encase with a span
+ * @param className a class name of the span
+ * @returns {string} a string of span with the class className and the str content inside
  * @private
  */
 function _highlightEntry(str, className) {
     return `<span class="${className}">${str}</span>`;
 }
 
+/**
+ * Replaces the regexp in the innerHTML of the given element with the formatFunc function.
+ * @param element an element which HTML content will be replaced
+ * @param regexp a regular expression that will be replaced
+ * @param formatFunc a function that takes string of the match and returns string to replace it with
+ * @private
+ */
 function _highlightElement(element, regexp, formatFunc) {
     element.innerHTML = element.innerHTML.replaceAll(regexp, formatFunc);
 }
